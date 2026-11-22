@@ -63,9 +63,9 @@ const resolveResourcePath = Effect.fn("desktop.assets.resolveResourcePath")(func
 
 const sourceTreeIconFileNames = {
   dev: {
-    ico: "blueprint-windows.ico",
-    macPng: "blueprint-macos-1024.png",
-    universalPng: "blueprint-universal-1024.png",
+    ico: "icon.ico",
+    macPng: "black-macos-1024.png",
+    universalPng: "black-universal-1024.png",
   },
   prod: {
     ico: "icon.ico",
@@ -78,7 +78,7 @@ function resolveSourceTreeIconPath(
   environment: DesktopEnvironment.DesktopEnvironment["Service"],
   ext: keyof DesktopIconPaths,
 ): string | undefined {
-  if (environment.isPackaged || ext === "icns") return undefined;
+  if (ext === "icns") return undefined;
   const brand = environment.isDevelopment ? "dev" : "prod";
   const fileNames = sourceTreeIconFileNames[brand];
   const fileName =
@@ -99,6 +99,12 @@ const resolveIconPath = Effect.fn("desktop.assets.resolveIconPath")(function* (
 > {
   const fileSystem = yield* FileSystem.FileSystem;
   const environment = yield* DesktopEnvironment.DesktopEnvironment;
+
+  const resourceIcon = yield* resolveResourcePath(`icon.${ext}`);
+  if (Option.isSome(resourceIcon)) {
+    return resourceIcon;
+  }
+
   const sourceTreeIconPath = resolveSourceTreeIconPath(environment, ext);
   if (sourceTreeIconPath !== undefined) {
     const sourceTreeIconExists = yield* fileSystem.exists(sourceTreeIconPath).pipe(
@@ -116,7 +122,27 @@ const resolveIconPath = Effect.fn("desktop.assets.resolveIconPath")(function* (
     }
   }
 
-  return yield* resolveResourcePath(`icon.${ext}`);
+  const fallbackPath = environment.path.join(
+    environment.rootDir,
+    "assets",
+    "prod",
+    ext === "ico" ? "icon.ico" : "black-universal-1024.png",
+  );
+  const fallbackExists = yield* fileSystem.exists(fallbackPath).pipe(
+    Effect.mapError(
+      (cause) =>
+        new DesktopAssetProbeError({
+          fileName: `icon.${ext}`,
+          candidatePath: fallbackPath,
+          cause,
+        }),
+    ),
+  );
+  if (fallbackExists) {
+    return Option.some(fallbackPath);
+  }
+
+  return Option.none<string>();
 });
 
 /** @public */

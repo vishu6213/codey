@@ -1092,6 +1092,14 @@ export const WSL_RUNTIME_EXTRA_RESOURCES = [
 ] as const;
 export const DESKTOP_EXTRA_RESOURCES = [
   {
+    from: "apps/desktop/resources/icon.ico",
+    to: "icon.ico",
+  },
+  {
+    from: "apps/desktop/resources/icon.png",
+    to: "icon.png",
+  },
+  {
     from: "apps/desktop/prod-resources/cursor-sdk",
     to: "node_modules/@cursor",
   },
@@ -2021,9 +2029,9 @@ function windowsVswherePrerequisiteScript(arch: typeof BuildArch.Type): string {
 export const preflightWindowsDesktopBuild = Effect.fn("preflightWindowsDesktopBuild")(
   function* (input: { readonly arch: typeof BuildArch.Type; readonly bundlesWslRuntime: boolean }) {
     const rustTarget = resolveResourceMonitorRustTargets("win", input.arch)[0]!;
-    const reuseResourceMonitor = yield* Config.Boolean(
-      "CODEY_DESKTOP_REUSE_RESOURCE_MONITOR",
-    ).pipe(Config.withDefault(false));
+    const reuseResourceMonitor = yield* Config.Boolean("CODEY_DESKTOP_REUSE_RESOURCE_MONITOR").pipe(
+      Config.withDefault(false),
+    );
     const python = yield* resolvePythonForNodeGyp();
     const checks = yield* Effect.all(
       {
@@ -2228,18 +2236,6 @@ export const verifyPackagedBundleIsSelfContained = Effect.fn("verifyPackagedBund
         }),
     });
     yield* copyDirectoryPreservingSymlinks(extractedApp, probeApp);
-
-    // Ancestor node_modules check skipped for local builds
-    /*
-    for (const candidate of ancestorNodeModulesPaths(probeApp, path.sep)) {
-      if (yield* fs.exists(candidate).pipe(Effect.orElseSucceed(() => false))) {
-        return yield* new BundleNotSelfContainedError({
-          exitCode: -1,
-          output: `Refusing to report success: ${candidate} is visible from the probe directory, so bare imports could resolve outside the packaged tree. Remove or rename it, or point TMPDIR somewhere without one.`,
-        });
-      }
-    }
-    */
 
     const entryPoint = path.join(probeApp, "apps/server/dist/bin.mjs");
     if (!(yield* fs.exists(entryPoint).pipe(Effect.orElseSucceed(() => false)))) {

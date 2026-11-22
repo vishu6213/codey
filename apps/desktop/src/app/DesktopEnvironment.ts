@@ -103,10 +103,11 @@ export function resolveDesktopAppBranding(input: {
   readonly appVersion: string;
 }): DesktopAppBranding {
   const stageLabel = resolveDesktopAppStageLabel(input);
+  const displayName = stageLabel === "Beta" ? APP_BASE_NAME : `${APP_BASE_NAME} (${stageLabel})`;
   return {
     baseName: APP_BASE_NAME,
     stageLabel,
-    displayName: `${APP_BASE_NAME} (${stageLabel})`,
+    displayName,
   };
 }
 
@@ -270,6 +271,9 @@ const make = Effect.fn("desktop.environment.make")(function* (
       path.join(input.dirname, "../prod-resources", fileName),
       path.join(resourcesPath, "resources", fileName),
       path.join(resourcesPath, fileName),
+      path.join(rootDir, "assets", "prod", fileName),
+      path.join(appRoot, "resources", fileName),
+      path.join(appRoot, "assets", "prod", fileName),
     ],
   });
 });

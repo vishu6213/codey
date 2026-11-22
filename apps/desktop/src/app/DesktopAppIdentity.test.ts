@@ -200,9 +200,11 @@ describe("DesktopAppIdentity", () => {
 
         const runtimeName = calls.setName[0];
         assert.isDefined(runtimeName);
-        assert.equal(runtimeName, `Codey ${stage}`);
+        const expectedName = stage === "Beta" ? "Codey" : `Codey ${stage}`;
+        assert.equal(runtimeName, expectedName);
         assert.match(runtimeName.replaceAll(" ", ""), /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/);
-        assert.equal(calls.setAboutPanelOptions[0]?.applicationName, `Codey (${stage})`);
+        const expectedAppName = stage === "Beta" ? "Codey" : `Codey (${stage})`;
+        assert.equal(calls.setAboutPanelOptions[0]?.applicationName, expectedAppName);
       }),
       { calls, environment },
     );

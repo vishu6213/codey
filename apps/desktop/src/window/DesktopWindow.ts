@@ -136,10 +136,11 @@ function getIconOption(
 ): { icon: string } | Record<string, never> {
   if (platform === "darwin") return {};
   const ext = platform === "win32" ? "ico" : "png";
-  return Option.match(iconPaths[ext], {
-    onNone: () => ({}),
-    onSome: (icon) => ({ icon }),
-  });
+  const preferred = Option.getOrUndefined(iconPaths[ext]);
+  const fallback =
+    ext === "ico" ? Option.getOrUndefined(iconPaths.png) : Option.getOrUndefined(iconPaths.ico);
+  const icon = preferred ?? fallback;
+  return icon !== undefined ? { icon } : {};
 }
 
 function getInitialWindowBackgroundColor(shouldUseDarkColors: boolean): string {
@@ -427,6 +428,11 @@ export const make = Effect.gen(function* () {
 
     pendingMainReveals.set(window, Effect.void);
     yield* rendererHistory.register(window.webContents, { surface: "main" });
+    if (environment.platform === "win32" && "icon" in iconOption && iconOption.icon) {
+      try {
+        window.setIcon(iconOption.icon);
+      } catch {}
+    }
     if (environment.platform === "darwin") {
       window.setAutoHideCursor(false);
     }
@@ -936,6 +942,8 @@ export const make = Effect.gen(function* () {
     if (Option.isSome(existingWindow)) return;
 
     const shouldUseDarkColors = yield* electronTheme.shouldUseDarkColors;
+    const iconPaths = yield* assets.iconPaths;
+    const iconOption = getIconOption(iconPaths, environment.platform);
     if (yield* Ref.get(desktopState.quitting)) return;
     const splash = yield* electronWindow.create({
       width: 360,
@@ -949,6 +957,7 @@ export const make = Effect.gen(function* () {
       show: false,
       skipTaskbar: false,
       backgroundColor: getInitialWindowBackgroundColor(shouldUseDarkColors),
+      ...iconOption,
       title: environment.displayName,
       webPreferences: {
         contextIsolation: true,
