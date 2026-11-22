@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codey App Testing"
+  short_description: "Test web and desktop in Codey's Browser panel"
+  default_prompt: "Use $test-codey-app to verify the affected web or desktop flow through Codey's Browser panel."

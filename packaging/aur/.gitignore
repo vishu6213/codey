@@ -1,0 +1,9 @@
+src/
+pkg/
+*.AppImage
+*.pkg.tar.zst
+.SRCINFO
+codey-bin-*.png
+codey-bin-*-LICENSE
+codey-nightly-bin-*.png
+codey-nightly-bin-*-LICENSE

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.t3tools.codey</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Codey</name>
+  <summary>Desktop GUI for coding agents</summary>
+  <developer id="com.codey">
+    <name>Codey</name>
+  </developer>
+  <description>
+    <p>
+      Codey is an open-source desktop app for coding agents. Work with your
+      existing agent subscriptions, review code changes, and run commands in
+      your projects.
+    </p>
+    <p>
+      Connect from desktop, web, or mobile to continue working remotely.
+    </p>
+  </description>
+  <launchable type="desktop-id">codey.desktop</launchable>
+  <icon type="stock">codey</icon>
+  <provides>
+    <binary>codey</binary>
+  </provides>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <url type="homepage">https://codey.app</url>
+  <url type="bugtracker">https://github.com/vishu6213/codey/issues</url>
+  <url type="vcs-browser">https://github.com/vishu6213/codey</url>
+</component>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skeleton Warrior — Live Background</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .live-bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      pointer-events: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <video
+    class="live-bg-video"
+    autoplay
+    muted
+    loop
+    playsinline
+    webkit-playsinline
+    preload="auto"
+    poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+  >
+    <source src="skeleton-warrior.mp4" type="video/mp4" />
+  </video>
+  
+  <script>
+    (function() {
+      const video = document.querySelector('.live-bg-video');
+      if (!video) return;
+      
+      // Ensure video plays (handles autoplay policy)
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay blocked - video will still be visible, user can interact if needed
+          // For background use, we just ensure it's there when policies allow
+          video.muted = true; // Ensure muted for any future play attempts
+        });
+      }
+      
+      // Handle visibility changes to pause/resume and save resources
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          video.pause();
+        } else {
+          video.play().catch(() => {});
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

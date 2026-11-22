@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="data:," />
+    <title>Spline Scene</title>
+
+    <link rel="modulepreload" href="./vendor/runtime.standalone.webgl.js" />
+    <link rel="modulepreload" href="./vendor/bevel.js" />
+    <link rel="modulepreload" href="./vendor/opentype.js" />
+
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #000;
+        color-scheme: dark;
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      #canvas3d {
+        display: block;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        outline: none;
+        touch-action: none;
+      }
+
+      #poster {
+        display: block;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        pointer-events: none;
+        transition: opacity 0.2s ease-out;
+      }
+
+      #poster.is-hidden {
+        opacity: 0;
+      }
+
+      #fallback {
+        position: fixed;
+        right: 0;
+        bottom: 16px;
+        left: 0;
+        padding: 0 16px;
+        color: #bdbdbd;
+        font: 13px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+        text-shadow: 0 1px 2px #000;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas3d" aria-label="Interactive 3D robot scene"></canvas>
+    <div id="poster" aria-hidden="true"></div>
+    <div id="fallback" role="status" hidden>The 3D scene could not be loaded.</div>
+
+    <script>
+      // Serve the scene's Roboto fonts locally instead of fonts.gstatic.com.
+      (function () {
+        var fonts = {
+          'KFOlCnqEu92Fr1MmEU9vAx05IsDqlA.ttf': 1,
+          'KFOlCnqEu92Fr1MmWUlvAx05IsDqlA.ttf': 1,
+          'KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf': 1,
+        };
+        var nativeFetch = window.fetch.bind(window);
+        window.fetch = function (input, init) {
+          var url = typeof input === 'string' ? input : input && input.url;
+          if (url && url.indexOf('https://fonts.gstatic.com/') === 0) {
+            var name = url.slice(url.lastIndexOf('/') + 1).split(/[?#]/)[0];
+            if (fonts[name]) input = './assets/fonts/' + name;
+          }
+          return nativeFetch(input, init);
+        };
+      })();
+
+      // Start the scene download now, in parallel with the runtime module.
+      window.__scene = fetch('./assets/scene.splinecode').then(function (response) {
+        if (!response.ok) throw new Error('Failed to load scene: ' + response.status);
+        return response.arrayBuffer();
+      });
+      window.__scene.catch(function () {});
+    </script>
+
+    <script type="module">
+      import { Application } from './vendor/runtime.standalone.webgl.js';
+
+      const canvas = document.getElementById('canvas3d');
+      const poster = document.getElementById('poster');
+      const fallback = document.getElementById('fallback');
+
+      const app = new Application(canvas, {
+        renderMode: 'auto',
+        renderer: 'webgl',
+        htmlContentMode: 'inline',
+        wasmPath: './vendor',
+      });
+
+      const TEXT_ID = '955dae16-a363-4466-9ebb-14bfc6b8a4ba';
+      const ROBOT_ID = 'e597cb64-a72f-43c3-9800-a1cb8cfba7ce';
+      const TEXT_BACKDROP_ID = '8e9b4319-0b08-49bd-954f-e42e7f4b622c';
+      const FLOOR_ID = '7ba78968-2a55-48f2-b14c-5191da3e075e';
+      const FONT_NAME = 'Nosifer';
+      const FONT_URL = './assets/fonts/Nosifer-Regular.ttf';
+      const MESSAGE_PARENTS = new Set(['Message 2', 'Message 3']);
+      const MESSAGE_NAMES = ['Message', 'Message 2', 'Message 3'];
+      const MESSAGE_LIFT = 70;
+      const messageLiftTargets = new Map();
+
+      async function applySceneTweaks(app) {
+        const scene = app._scene;
+
+        if (app._renderer?.pipeline?.setWatermark) {
+          app._renderer.pipeline.setWatermark(null);
+        }
+
+        const entities = scene?.entityByUuid ? Object.values(scene.entityByUuid) : [];
+        const textEntity = scene?.entityByUuid?.[TEXT_ID];
+        const backdropEntity = scene?.entityByUuid?.[TEXT_BACKDROP_ID];
+        const floorEntity = scene?.entityByUuid?.[FLOOR_ID];
+        const cursorTarget =
+          app.findObjectByName('Cursor Target') ||
+          scene?.entityByUuid?.['2e608af3-53fa-494e-ac44-c38b3fff0765'] ||
+          entities.find((e) => e.name === 'Cursor Target');
+
+        if (backdropEntity) backdropEntity.visible = false;
+        if (floorEntity) floorEntity.visible = false;
+        if (cursorTarget) {
+          cursorTarget.visible = true;
+          if (cursorTarget.data) cursorTarget.data.visible = true;
+        }
+
+        const shared = app._sharedAssetsManager;
+
+        let textFont = shared?.getFont?.(FONT_NAME);
+        if (!textFont && shared?.addFont) {
+          shared.addFont(FONT_NAME, { url: FONT_URL, isUserFont: true });
+          textFont = shared.getFont?.(FONT_NAME);
+        }
+        if (textFont?.loadingPromise) {
+          await textFont.loadingPromise;
+        }
+
+        if (textEntity?.data?.geometry) {
+          Object.assign(textEntity.data.geometry, {
+            text: { textValue: 'CODEY' },
+            font: FONT_NAME,
+            fontSize: 120,
+            width: 900,
+            height: 260,
+          });
+        }
+
+        if (textEntity?.geometry && textFont?.isLoaded) {
+          textEntity.geometry.font = textFont;
+        }
+
+        if (textEntity?.geometry?.update) {
+          textEntity.geometry.update(
+            {
+              ...textEntity.geometry.userData.parameters,
+              text: { textValue: 'CODEY' },
+              font: FONT_NAME,
+              fontSize: 120,
+              width: 900,
+              height: 260,
+            },
+            shared,
+          );
+        }
+
+        for (const entity of entities) {
+          if (entity?.data?.geometry?.type !== 'TextGeometry') continue;
+          if (entity === textEntity) continue;
+          const value = entity?.data?.geometry?.text?.textValue ?? '';
+          if (value === 'RoboTechLearningCenter' || value === 'TRACKING...') {
+            entity.visible = false;
+          }
+        }
+
+        const messageTexts = entities.filter(
+          (entity) =>
+            entity?.data?.geometry?.type === 'TextGeometry' &&
+            MESSAGE_PARENTS.has(entity.parent?.name),
+        );
+        for (const messageText of messageTexts) {
+          messageText.visible = true;
+          messageText.data.visible = true;
+        }
+
+        const followHandler = app.eventManager?.handlers?.Follow;
+        for (const entity of entities) {
+          if (!MESSAGE_NAMES.includes(entity?.name)) continue;
+          if (!messageLiftTargets.has(entity)) {
+            const baseY = Array.isArray(entity.data?.position)
+              ? entity.data.position[1]
+              : entity.position.y;
+            messageLiftTargets.set(entity, baseY + MESSAGE_LIFT);
+          }
+          const targetY = messageLiftTargets.get(entity);
+          entity.position.y = targetY;
+          entity.updateMatrix();
+          entity.updateMatrixWorld(true);
+          if (typeof entity.updateMatrixWorldRigid === 'function') {
+            entity.updateMatrixWorldRigid();
+          }
+          if (Array.isArray(entity.data?.position)) {
+            entity.data.position[1] = targetY;
+          }
+          for (const followEvent of followHandler?.events || []) {
+            if (followEvent.object !== entity) continue;
+            followEvent.worldPosition0.y = targetY;
+          }
+        }
+
+        const robotEntity = scene?.entityByUuid?.[ROBOT_ID];
+        for (const event of robotEntity?.data?.events || []) {
+          if (event?.data?.type === 'LookAt') event.data.disabled = true;
+        }
+
+        const lookAtEvents = app.eventManager?.handlers?.LookAt?.events;
+        if (Array.isArray(lookAtEvents)) {
+          for (let i = lookAtEvents.length - 1; i >= 0; i -= 1) {
+            if (lookAtEvents[i]?.object?.name !== 'Robot') continue;
+            lookAtEvents[i].data.disabled = true;
+            lookAtEvents.splice(i, 1);
+          }
+        }
+
+        const robot = app.findObjectByName('Robot');
+        if (robot) robot.rotation.set(0, 0, 0);
+
+        if (shared?.updateEntityMaterialParams) {
+          if (textEntity) {
+            shared.updateEntityMaterialParams(textEntity, {
+              layers: [
+                { type: 'fresnel', color: '#ff0000', intensity: 0.6 },
+                { type: 'light', specular: '#ffb3b3', shininess: 140 },
+              ],
+            });
+            shared.updateEntityMaterialParams(textEntity, { color: '#ff0000' });
+          }
+          for (const messageText of messageTexts) {
+            shared.updateEntityMaterialParams(messageText, { color: '#ffffff' });
+          }
+        }
+
+        const messageEntities = entities.filter((entity) => MESSAGE_NAMES.includes(entity?.name));
+        for (const messageEntity of messageEntities) {
+          if (messageEntity.material?.data?.layers) {
+            messageEntity.material.data.layers = messageEntity.material.data.layers.filter(
+              (l) => (l.type || l.data?.type) !== 'outline',
+            );
+          }
+          if (messageEntity.material?.layers) {
+            messageEntity.material.layers = messageEntity.material.layers.filter(
+              (l) => l.type !== 'outline',
+            );
+          }
+          if (messageEntity.states) {
+            for (const st of Object.values(messageEntity.states)) {
+              if (st?.data?.material?.layers) {
+                st.data.material.layers = st.data.material.layers.filter(
+                  (l) => (l.type || l.data?.type) !== 'outline',
+                );
+              }
+              if (st?.material?.layers) {
+                st.material.layers = st.material.layers.filter(
+                  (l) => (l.type || l.data?.type) !== 'outline',
+                );
+              }
+            }
+          }
+          if (shared?.updateEntityMaterialParams) {
+            shared.updateEntityMaterialParams(messageEntity, {
+              layers: [
+                { type: 'outline', outlineColor: '#000000', outlineWidth: 0, contourWidth: 0, alpha: 0 },
+              ],
+            });
+          }
+          if (messageEntity.material) messageEntity.material.needsUpdate = true;
+        }
+
+        app.requestRender();
+      }
+
+      try {
+        const scene = await window.__scene;
+        await app.start(scene);
+        window.spline = app;
+
+        function handleMouseMove(clientX, clientY) {
+          const evInit = {
+            clientX,
+            clientY,
+            screenX: clientX,
+            screenY: clientY,
+            pageX: clientX,
+            pageY: clientY,
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            pointerType: 'mouse',
+            isPrimary: true,
+          };
+          try {
+            canvas.dispatchEvent(new PointerEvent('pointermove', evInit));
+            canvas.dispatchEvent(new MouseEvent('mousemove', evInit));
+            window.dispatchEvent(new PointerEvent('pointermove', evInit));
+            window.dispatchEvent(new MouseEvent('mousemove', evInit));
+          } catch (_) {}
+        }
+
+        window.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'codey:mousemove') {
+            handleMouseMove(event.data.clientX, event.data.clientY);
+          }
+        });
+        window.handleCodeyMouseMove = handleMouseMove;
+
+        try {
+          await applySceneTweaks(app);
+        } catch (error) {
+          console.error('[scene-tweaks]', error);
+        }
+        [500, 1500].forEach((delay) => {
+          setTimeout(() => {
+            applySceneTweaks(app).catch((error) => console.error('[scene-tweaks]', error));
+          }, delay);
+        });
+        performance.mark('spline-ready');
+        poster.classList.add('is-hidden');
+        poster.addEventListener('transitionend', () => poster.remove(), { once: true });
+        setTimeout(() => poster.remove(), 400);
+      } catch (error) {
+        console.error('[spline]', error);
+        fallback.hidden = false;
+      }
+    </script>
+  </body>
+</html>
