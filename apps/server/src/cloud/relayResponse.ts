@@ -64,7 +64,7 @@ function recoveryHint(error: RelayProtectedError): string {
     case "RelayEnvironmentLinkLimitExceededError":
       return "Unlink an unused environment in Codey Connect, then restart Codey on this machine.";
     case "RelayAuthInvalidError":
-      return "Run `t3 connect login` to check this machine's authorization. If the stored credential was revoked, sign out with `t3 connect logout`, then run `t3 connect` again. Restart Codey after signing in.";
+      return "Run `codey connect login` to check this machine's authorization. If the stored credential was revoked, sign out with `codey connect logout`, then run `codey connect` again. Restart Codey after signing in.";
     case "RelayEnvironmentLinkProofExpiredError":
     case "RelayEnvironmentLinkProofInvalidError":
       return "Check this machine's date and time, update Codey, then restart it.";

@@ -24,7 +24,7 @@ export const absoluteUrl = (pathname: string): string => new URL(pathname, SITE_
 export const organizationJsonLd = (): JsonLd => ({
   "@type": "Organization",
   "@id": ORGANIZATION_ID,
-  name: "T3 Tools Inc",
+  name: "Codey",
   url: SITE_ORIGIN,
   logo: absoluteUrl("/apple-touch-icon.png"),
   sameAs: ["https://github.com/vishu6213"],
