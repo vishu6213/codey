@@ -2,19 +2,29 @@
 
   <img src="assets/prod/logo.svg" alt="Codey Logo" width="130" height="130" />
 
-  # Codey
+# Codey
 
-  **Your Autonomous AI Coding Studio & Intelligent Development Harness**
+**Your Autonomous AI Coding Studio & Intelligent Development Harness**
 
-  [![Release](https://img.shields.io/badge/Release-v0.1.7-crimson.svg?style=flat-square)](https://github.com/vishu6213/codey/releases)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg?style=flat-square)](LICENSE)
-  [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-black.svg?style=flat-square)]()
-  [![GitHub Stars](https://img.shields.io/github/stars/vishu6213/codey?style=flat-square&color=FF2A4D)](https://github.com/vishu6213/codey/stargazers)
+[![Release](https://img.shields.io/badge/Release-v0.1.7-crimson.svg?style=flat-square)](https://github.com/vishu6213/codey/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-black.svg?style=flat-square)](<>)
+[![GitHub Stars](https://img.shields.io/github/stars/vishu6213/codey?style=flat-square&color=FF2A4D)](https://github.com/vishu6213/codey/stargazers)
 
   <br />
 
-  [**Download Desktop App**](https://github.com/vishu6213/codey/releases) • [**Documentation**](docs/README.md) • [**Report Bug**](https://github.com/vishu6213/codey/issues) • [**Discussions**](https://github.com/vishu6213/codey/discussions)
+[**Download Desktop App**](https://github.com/vishu6213/codey/releases) • [**Documentation**](docs/README.md) • [**Report Bug**](https://github.com/vishu6213/codey/issues) • [**Discussions**](https://github.com/vishu6213/codey/discussions)
 
+</div>
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+  <img src="assets/screenshots/codey-screen-1.jpg" alt="Codey Studio - New Thread" width="100%" />
+  <br /><br />
+  <img src="assets/screenshots/codey-screen-2.jpg" alt="Codey Studio - Surface Panel" width="100%" />
 </div>
 
 ---
@@ -53,14 +63,14 @@ Instead of switching between disjointed browser tabs, command line scripts, and 
 
 Codey provides first-class support for industry-leading AI models and local LLM runtimes:
 
-| Engine / Provider | Key Capabilities |
-| :--- | :--- |
+| Engine / Provider               | Key Capabilities                                                                |
+| :------------------------------ | :------------------------------------------------------------------------------ |
 | **Google Antigravity & Gemini** | Gemini 2.5 Flash / Pro, multimodal reasoning, lightning-fast context processing |
-| **Anthropic Claude** | Claude 3.7 Sonnet, Claude 3.5 Haiku, multi-file agentic reasoning |
-| **OpenAI Codex / GPT** | GPT-4o, specialized coding runtimes, function calling |
-| **Cursor Agent** | Codebase-wide refactoring, iterative semantic indexing |
-| **OpenCode & Local Models** | Open-source models, Ollama endpoints, self-hosted LLM setups |
-| **Grok Build** | High-speed code synthesis and algorithmic problem solving |
+| **Anthropic Claude**            | Claude 3.7 Sonnet, Claude 3.5 Haiku, multi-file agentic reasoning               |
+| **OpenAI Codex / GPT**          | GPT-4o, specialized coding runtimes, function calling                           |
+| **Cursor Agent**                | Codebase-wide refactoring, iterative semantic indexing                          |
+| **OpenCode & Local Models**     | Open-source models, Ollama endpoints, self-hosted LLM setups                    |
+| **Grok Build**                  | High-speed code synthesis and algorithmic problem solving                       |
 
 ---
 
@@ -83,6 +93,7 @@ codey
 ```
 
 Or via npx:
+
 ```bash
 npx codey
 ```
@@ -114,6 +125,7 @@ codey/
 ## 🛠️ Building & Contributing
 
 ### Prerequisites
+
 - Node.js (v20+ recommended)
 - `vp` (Vite+) package manager
 
@@ -143,6 +155,7 @@ npm run build
 # Package standalone Windows (.exe) desktop installer
 npm run dist:desktop:win:x64
 ```
+
 The resulting binary will be output to `release/Codey-0.1.7-x64.exe`.
 
 ---
@@ -150,6 +163,7 @@ The resulting binary will be output to `release/Codey-0.1.7-x64.exe`.
 ## 💾 Local Storage & Privacy
 
 All local configuration and history are kept isolated on your disk:
+
 - **Root Directory:** `~/.codey/` (Windows: `%USERPROFILE%\.codey`)
 - **Conversation State:** `~/.codey/userdata/statev2.sqlite`
 - **Application Preferences:** `~/.codey/userdata/settings.json`
